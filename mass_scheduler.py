@@ -30,7 +30,7 @@ attributes_regex = re.compile("|".join(attributes))
 def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--username')
-    parser.add_argument('--ack_msg')
+    parser.add_argument('--msg')
     parser.add_argument('--search')
     return parser.parse_args(args)
 
@@ -40,8 +40,8 @@ def parse_missing_args(args):
     while not args.username:
         args.username = get_input('Enter your Username: ')
 
-    while not args.ack_msg:
-        args.ack_msg = get_input('Enter message used for acknowledgement:')
+    while not args.msg:
+        args.msg = get_input('Enter message used for acknowledgement:')
 
     while not args.search:
         search_msg = get_input('Enter desired search regex:')
