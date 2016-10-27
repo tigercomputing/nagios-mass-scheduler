@@ -31,22 +31,22 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--username')
     parser.add_argument('--msg')
-    parser.add_argument('--search')
+    parser.add_argument('--regex')
     return parser.parse_args(args)
 
 
 def parse_missing_args(args):
     """Attempts to fetch missing arguments by prompting user"""
+
     while not args.username:
         args.username = get_input('Enter your Username: ')
-
     while not args.msg:
         args.msg = get_input('Enter message used for acknowledgement:')
+    while not args.regex:
+        args.regex = get_input('Enter desired search regex:')
 
-    while not args.search:
-        search_msg = get_input('Enter desired search regex:')
-        args.search = re.compile(r'{}'.format(search_msg))
-
+    # Pre-Compile the regular expression
+    args.regex = re.compile(r'{}'.format(args.regex))
     return args
 
 
@@ -149,7 +149,7 @@ def main():
                 # Only proceed is current service matches search term
                 desc = service.get('service_description', False)
 
-                if args.search.match(desc) and is_unchecked(service):
+                if args.regex.match(desc) and is_unchecked(service):
 
                     choice = prompt_action(service)
                     handle_choice(choice, fifo_queue, args)
