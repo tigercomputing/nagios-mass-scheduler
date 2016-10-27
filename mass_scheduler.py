@@ -81,7 +81,7 @@ def is_unchecked(service):
     return not any(int(service.get(key, 1)) for key in key_states)
 
 
-def prompt_service_action(service):
+def prompt_action(service):
     """Prompts the user for input for each pending service"""
 
     # Display service description and hostname
@@ -151,7 +151,7 @@ def main():
 
                 if args.search.match(desc) and is_unchecked(service):
 
-                    choice = prompt_service_action(service)
+                    choice = prompt_action(service)
                     handle_choice(choice, fifo_queue, args)
 
             # Delete attributes set from previous service
