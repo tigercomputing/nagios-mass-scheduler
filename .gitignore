@@ -1,2 +1,4 @@
 tags*
 venv/*
+mass_scheduler.pl
+*.dat
