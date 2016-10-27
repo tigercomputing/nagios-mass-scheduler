@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+import os
 import re
 import sys
 
@@ -83,6 +84,9 @@ def is_unchecked(service):
 
 def prompt_action(service):
     """Prompts the user for input for each pending service"""
+
+    # Clear the screen
+    os.system('clear')
 
     # Display service description and hostname
     service_info = "{service_description} @ {host_name}".format(**service)
