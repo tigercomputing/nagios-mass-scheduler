@@ -1,4 +1,5 @@
+*.dat
+*.txt
+mass_scheduler.pl
 tags*
 venv/*
-mass_scheduler.pl
-*.dat
