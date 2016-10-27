@@ -77,10 +77,7 @@ def sanitize(text):
 
 
 def is_unchecked(service):
-    """
-    Returns True if `current_state`, `problem_has_been_acknowledged` &
-    `scheduled_downtime_depth` are all set to 0
-    """
+    """Returns True if all `key_states` in service dictionary are set to 0 """
     return not any(int(service.get(key, 1)) for key in key_states)
 
 
