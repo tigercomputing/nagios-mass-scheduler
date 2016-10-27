@@ -2,17 +2,10 @@
 
 import argparse
 import datetime
-import os
 import re
 import sys
 
 from termcolor import colored
-
-# Location of nagios status file
-status_file = 'test.dat'
-
-# Size of the terminal window (for pretty printing)
-term_size = os.get_terminal_size()
 
 # List of attributes to parse => push onto FIFO queue
 attributes = [
@@ -24,21 +17,43 @@ attributes = [
     'scheduled_downtime_depth',
 ]
 
-# Precompile Regular expression to match lines
-attributes_regex = re.compile("|".join(attributes))
-
-
 # We only care about these keys when Scheduling jobs
 key_states = [
     'current_state', 'problem_has_been_acknowledged',
     'scheduled_downtime_depth'
 ]
 
+# Precompile Regular expression to match lines
+attributes_regex = re.compile("|".join(attributes))
 
-def get_file(fname):
+
+def parse_args(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--username')
+    parser.add_argument('--ack_msg')
+    parser.add_argument('--search')
+    return parser.parse_args(args)
+
+
+def parse_missing_args(args):
+    """Attempts to fetch missing arguments by prompting user"""
+    while not args.username:
+        args.username = get_input('Enter your Username: ')
+
+    while not args.ack_msg:
+        args.ack_msg = get_input('Enter message used for acknowledgement:')
+
+    while not args.search:
+        search_msg = get_input('Enter desired search regex:')
+        args.search = re.compile(r'{}'.format(search_msg))
+
+    return args
+
+
+def get_file(fname, flags):
     """Attempts to open a file on the system"""
     try:
-        f = open(fname, 'r')
+        f = open(fname, flags)
     except (OSError, IOError) as error:
         print("Error opening file: ", error)
         sys.exit(1)
@@ -61,120 +76,99 @@ def sanitize(text):
     return text.strip().lower()
 
 
-class MassScheduler():
+def is_unchecked(service):
+    """
+    Returns True if `current_state`, `problem_has_been_acknowledged` &
+    `scheduled_downtime_depth` are all set to 0
+    """
+    return not any(int(service.get(key, 1)) for key in key_states)
 
-    def __init__(self):
-        self.args = self.parse_args(sys.argv[1:])
-        self.user = self.args.user
-        self.msg = self.args.msg
-        self.search = self.args.search
-        self.parse_missing_args()
 
-    def parse_args(self, args):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--user')
-        parser.add_argument('--msg')
-        parser.add_argument('--search')
-        return parser.parse_args(args)
+def prompt_service_action(service):
+    """Prompts the user for input for each pending service"""
 
-    def parse_missing_args(self):
-        """Attempts to fetch missing arguments by prompting user"""
-        while not self.user:
-            self.user = get_input('Enter your Username: ')
+    # Display service description and hostname
+    service_info = "{service_description} @ {host_name}".format(**service)
+    print(colored('Service:', 'yellow'), service_info)
 
-        while not self.msg:
-            self.msg = get_input('Enter message used for acknowledgement:')
+    # Display plugin output
+    output_info = "Output: {plugin_output}".format(**service)
+    print(colored('Output:', 'cyan'), output_info)
 
-        while not self.search:
-            search_msg = get_input('Enter desired search regex:')
-            self.search = re.compile(r'{}'.format(search_msg))
+    # Prompt user for [y/n/s]
+    colours = [('y', 'green'), ('n', 'red'), ('s', 'blue')]
+    choices = (colored(t, c) for (t, c) in colours)
+    return sanitize(get_input('[{}/{}/{}]'.format(*choices)))
 
-    def schedule_downtime(self):
-        pass
 
-    def is_unchecked(self):
-        """
-        Returns True if problem hasn't been acknowledged, no state has been
-        set, and no downtime has been scheduled
-        """
-        return not any(int(self.info_dict.get(key, 1)) for key in key_states)
+def handle_choice(choice, fifo_queue, args):
 
-    def prompt_user_action(self):
+    # If the user wishes to Schedule Downtime
+    if choice.startswith('s'):
 
-        # Display service description and hostname
-        service_string = colored('Service: ', 'yellow')
-        service_info = "{service_description} @ {host_name}"
-        print(service_string, service_info.format(**self.info_dict))
+        time_now = str(datetime.datetime.now())
+        start_time = get_input('Start Date: [Default: now]') or time_now
+        end_time = get_input('End Date: [Default: now + 2h]') or time_now
 
-        # Display plugin output
-        output_string = colored('Output: ', 'cyan')
-        output_info = "Output: {plugin_output}"
-        print(output_string, output_info.format(**self.info_dict))
+        write_data = ' '.join([start_time, end_time, '\n'])
+        fifo_queue.write(write_data)
 
-        # Prompt user for [y/n/s]
-        colours = [('y', 'green'), ('n', 'red'), ('s', 'blue')]
-        choices = (colored(t, c) for (t, c) in colours)
-        decision = sanitize(get_input('[{}/{}/{}]'.format(*choices)))
+    # If the user wishes to Acknowledge problem
+    elif choice.startswith('y'):
+        write_data = ' '.join(["thing", "acknowledged", "boiii\n"])
+        fifo_queue.write(write_data)
 
-        # If the user wishes to Schedule Downtime
-        if decision.startswith('s'):
 
-            start_time = get_input('Start Date: [Default: now]')
-            print(start_time or datetime.datetime.now())
+def main():
+    args = parse_missing_args(parse_args(sys.argv[1:]))
 
-            end_time = get_input('End Date: [Default: now + 2h]')
-            print(end_time or datetime.datetime.now())
+    status_file = get_file('status.dat', 'r')
+    fifo_queue = get_file('outfile.txt', 'w')
 
-        # If the user wishes to Acknowledge problem
-        elif decision.startswith('y'):
-            # Write to command FIFO queue
-            pass
+    # Store attributes in a dictionary
+    service = {}
 
-    def main(self):
+    # Read in lines into a generator object
+    lines = (line.strip() for line in status_file)
 
-        # Store attributes in a dictionary
-        self.info_dict = {}
+    is_service = False
 
-        # Read in lines into a generator object
-        lines = (line.strip() for line in get_file(status_file))
+    for line in lines:
 
-        is_service = False
+        # Skip comments and blank lines
+        if line.startswith('#') or line == '':
+            continue
 
-        for line in lines:
+        # Reached the start of a 'servicestatus' block
+        elif line.startswith('servicestatus') and line.endswith('{'):
+            is_service = True
 
-            # Skip comments and blank lines
-            if line.startswith('#') or line == '':
-                continue
+        # Reached the end of a 'servicestatus' block
+        elif line.startswith('}'):
 
-            # Reached the start of a 'servicestatus' block
-            elif line.startswith('servicestatus') and line.endswith('{'):
-                is_service = True
-
-            # Reached the end of a 'servicestatus' block
-            elif line.startswith('}'):
-
-                # Acknowledge previously parsed service
-                if is_service:
-
-                    # Only proceed is current service matches search term
-                    desc = self.info_dict.get('service_description', False)
-
-                    if self.search.match(desc) and self.is_unchecked():
-
-                        self.prompt_user_action()
-
-                # Delete attributes set from previous service
-                self.info_dict.clear()
-                is_service = False
-
+            # Acknowledge previously parsed service
             if is_service:
-                match = re.match(attributes_regex, line)
-                if match:
-                    key = match.group()
-                    self.info_dict[key] = line.split("=", maxsplit=1)[-1]
 
-        print(colored('Finished!', 'green'))
+                # Only proceed is current service matches search term
+                desc = service.get('service_description', False)
+
+                if args.search.match(desc) and is_unchecked(service):
+
+                    choice = prompt_service_action(service)
+                    handle_choice(choice, fifo_queue, args)
+
+            # Delete attributes set from previous service
+            service.clear()
+            is_service = False
+
+        if is_service:
+            match = re.match(attributes_regex, line)
+            if match:
+                key = match.group()
+                service[key] = line.split("=", maxsplit=1)[-1]
+
+    print(colored('Finished!', 'green'))
 
 
 if __name__ == '__main__':
-    scheduler = MassScheduler().main()
+    main()
