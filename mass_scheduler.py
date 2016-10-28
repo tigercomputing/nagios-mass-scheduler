@@ -10,12 +10,12 @@ from termcolor import colored
 
 # List of attributes to parse => push onto FIFO queue
 attributes = [
-    'host_name',
-    'service_description',
     'current_state',
-    'problem_has_been_acknowledged',
+    'host_name',
     'plugin_output',
+    'problem_has_been_acknowledged',
     'scheduled_downtime_depth',
+    'service_description',
 ]
 
 # Precompile Regular expression to match lines
