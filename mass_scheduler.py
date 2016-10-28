@@ -8,6 +8,7 @@ import sys
 from argparse import ArgumentParser
 from collections import ChainMap
 from termcolor import colored
+from inspect import getsource
 
 # List of attributes to parse => push onto FIFO queue
 attributes = [
@@ -82,7 +83,9 @@ def get_input(prompt, choices=[], coerces_to=None, constraintfn=None):
                 get_input(prompt, choices)
         if constraintfn:
             if not constraintfn(input_string):
-                print(colored('Failed to meet constraints', 'red'))
+                funcbody = getsource(constraintfn).split(':', maxsplit=1)[-1]
+                constraint_msg = 'Failed to meet constraint: {}'
+                print(colored(constraint_msg.format(funcbody.strip()), 'red'))
                 get_input(prompt, choices)
         return input_string
 
@@ -128,7 +131,7 @@ def handle_choice(choice, fifo_queue, service, args):
         end_time = get_input(
             'End Time: [mins from now]',
             coerces_to=int,
-            constraintfn=lambda t: t > start_time
+            constraintfn=lambda end_time: end_time > start_time
         )
 
         dates = {'start_time': start_time*60, 'end_time': end_time*60}
