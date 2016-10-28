@@ -62,13 +62,24 @@ def get_file(fname, flags):
         return f
 
 
-def get_input(msg):
+def get_input(prompt, choices=[], coerces_to=None):
     """Provides user with input prompt, quits on escape key-code"""
     try:
-        input_string = input(msg + '\n-> ')
+        input_string = input(prompt + '\n-> ')
     except (EOFError, KeyboardInterrupt):
         raise SystemExit(colored("\nQuitting!", 'red'))
     else:
+        # Check if input matches specified choices
+        if choices and input_string not in choices:
+            print(colored('Invalid choice!', 'red'))
+            get_input(prompt, choices)
+        # If coerce target specified, attempt to coerce value to that type
+        if coerces_to:
+            try:
+                input_string = coerces_to(input_string)
+            except (TypeError, ValueError):
+                print(colored('Invalid type!', 'red'))
+                get_input(prompt, choices)
         return input_string
 
 
@@ -99,7 +110,7 @@ def prompt_action(service):
     # Prompt user for [y/n/s]
     colours = [('y', 'green'), ('n', 'red'), ('s', 'blue')]
     choices = (colored(text, colour) for (text, colour) in colours)
-    return sanitize(get_input('[{}/{}/{}]'.format(*choices)))
+    return sanitize(get_input('[{}/{}/{}]'.format(*choices), ['y', 'n', 's']))
 
 
 def handle_choice(choice, fifo_queue, service, args):
@@ -108,11 +119,10 @@ def handle_choice(choice, fifo_queue, service, args):
     # If the user wishes to Schedule Downtime
     if choice.startswith('s'):
 
-        time_now = str(datetime.datetime.now())
-        start_time = get_input('Start Date: [Default: now]') or time_now
-        end_time = get_input('End Date: [Default: now + 2h]') or time_now
+        start_time = get_input('Start Date: [Default: now]', coerces_to=int)
+        end_time = get_input('End Date: [Default: now + 2h]', coerces_to=int)
 
-        dates = {'start_time': start_time, 'end_time': end_time}
+        dates = {'start_time': start_time*60, 'end_time': end_time*60}
         data = ChainMap(service, vars(args), dates)
 
         write_data = """
