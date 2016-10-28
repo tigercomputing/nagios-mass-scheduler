@@ -7,7 +7,6 @@ import sys
 from argparse import ArgumentParser
 from collections import ChainMap
 from termcolor import colored
-from inspect import getsource
 
 # List of attributes to parse => push onto FIFO queue
 attributes = [
@@ -62,31 +61,15 @@ def get_file(fname, flags):
         return f
 
 
-def get_input(prompt, choices=[], coerces_to=None, constraintfn=None):
+def get_input(prompt, choices={}):
     """Provides user with input prompt, quits on escape key-code"""
     try:
         input_string = input(prompt + '\n-> ')
     except (EOFError, KeyboardInterrupt):
         raise SystemExit(colored("\nQuitting!", 'red'))
     else:
-        # Check if input matches specified choices
-        if choices and input_string not in choices:
-            print(colored('Invalid choice!', 'red'))
-            get_input(prompt, choices)
-        # If coerce target specified, attempt to coerce value to that type
-        if coerces_to:
-            try:
-                input_string = coerces_to(input_string)
-            except (TypeError, ValueError):
-                print(colored('Invalid type!', 'red'))
-                get_input(prompt, choices)
-        if constraintfn:
-            if not constraintfn(input_string):
-                funcbody = getsource(constraintfn).split(':', maxsplit=1)[-1]
-                constraint_msg = 'Failed to meet constraint: {}'
-                print(colored(constraint_msg.format(funcbody.strip()), 'red'))
-                get_input(prompt, choices)
-        return input_string
+        # Retry if input_string is empty
+        return input_string or get_input(colored('Retry', 'red'), choices)
 
 
 def sanitize(text):
@@ -114,24 +97,33 @@ def prompt_action(service):
     print(colored('Output:', 'cyan'), output_info)
 
     # Prompt user for [y/n/s]
-    colours = [('y', 'green'), ('n', 'red'), ('s', 'blue')]
-    choices = (colored(text, colour) for (text, colour) in colours)
-    return sanitize(get_input('[{}/{}/{}]'.format(*choices), ['y', 'n', 's']))
+    choices, colours = ('y', 'n', 's'), ('green', 'red', 'blue')
+    text = (colored(t, c) for (t, c) in zip(choices, colours))
+    choice = sanitize(get_input('[{}/{}/{}]'.format(*text)))
+
+    # Retry if the choice is invalid
+    return choice if choice in choices else prompt_action(service)
+
+
+def get_date(prompt):
+    while True:
+        try:
+            return int(get_input(prompt))
+        except ValueError:
+            print(colored('Invalid date', 'red'))
 
 
 def handle_choice(choice, fifo_queue, service, args):
-    # [TODO] Fix indentation
 
     # If the user wishes to Schedule Downtime
     if choice.startswith('s'):
-
-        start_time = get_input('Start Time: [mins from now]', coerces_to=int)
-
-        end_time = get_input(
-            'End Time: [mins from now]',
-            coerces_to=int,
-            constraintfn=lambda end_time: end_time > start_time
-        )
+        start_time = get_date('Start Time [mins from now]')
+        while True:
+            end_time = get_date('End Time [mins from now]')
+            if start_time > end_time:
+                print(colored('End Time must be > Start Time', 'red'))
+            else:
+                break
 
         dates = {'start_time': start_time*60, 'end_time': end_time*60}
         data = ChainMap(service, vars(args), dates)
@@ -144,7 +136,6 @@ def handle_choice(choice, fifo_queue, service, args):
         fifo_queue.write(write_data.format(**data))
 
     # If the user wishes to Acknowledge problem
-
     elif choice.startswith('y'):
         data = ChainMap(service, vars(args))
         write_data = """
