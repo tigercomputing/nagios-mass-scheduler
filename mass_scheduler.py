@@ -18,12 +18,6 @@ attributes = [
     'scheduled_downtime_depth',
 ]
 
-# We only care about these keys when Scheduling jobs
-key_states = [
-    'current_state', 'problem_has_been_acknowledged',
-    'scheduled_downtime_depth'
-]
-
 # Precompile Regular expression to match lines
 attributes_regex = re.compile("|".join(attributes))
 
@@ -79,7 +73,10 @@ def sanitize(text):
 
 def is_unchecked(service):
     """Returns True if all `key_states` in service dictionary are set to 0 """
-    return not any(int(service.get(key, 1)) for key in key_states)
+    return not any(int(service.get(key, 1)) for key in [
+        'current_state', 'problem_has_been_acknowledged',
+        'scheduled_downtime_depth'
+    ])
 
 
 def prompt_action(service):
