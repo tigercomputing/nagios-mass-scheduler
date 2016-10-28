@@ -62,7 +62,7 @@ def get_file(fname, flags):
         return f
 
 
-def get_input(prompt, choices=[], coerces_to=None):
+def get_input(prompt, choices=[], coerces_to=None, constraintfn=None):
     """Provides user with input prompt, quits on escape key-code"""
     try:
         input_string = input(prompt + '\n-> ')
@@ -79,6 +79,10 @@ def get_input(prompt, choices=[], coerces_to=None):
                 input_string = coerces_to(input_string)
             except (TypeError, ValueError):
                 print(colored('Invalid type!', 'red'))
+                get_input(prompt, choices)
+        if constraintfn:
+            if not constraintfn(input_string):
+                print(colored('Failed to meet constraints', 'red'))
                 get_input(prompt, choices)
         return input_string
 
@@ -119,8 +123,13 @@ def handle_choice(choice, fifo_queue, service, args):
     # If the user wishes to Schedule Downtime
     if choice.startswith('s'):
 
-        start_time = get_input('Start Date: [Default: now]', coerces_to=int)
-        end_time = get_input('End Date: [Default: now + 2h]', coerces_to=int)
+        start_time = get_input('Start Time: [mins from now]', coerces_to=int)
+
+        end_time = get_input(
+            'End Time: [mins from now]',
+            coerces_to=int,
+            constraintfn=lambda t: t > start_time
+        )
 
         dates = {'start_time': start_time*60, 'end_time': end_time*60}
         data = ChainMap(service, vars(args), dates)
