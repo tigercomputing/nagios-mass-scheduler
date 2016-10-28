@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import argparse
 import datetime
 import os
 import re
 import sys
 
+from argparse import ArgumentParser
+from collections import ChainMap
 from termcolor import colored
 
 # List of attributes to parse => push onto FIFO queue
@@ -29,7 +30,7 @@ attributes_regex = re.compile("|".join(attributes))
 
 
 def parse_args(args):
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('--username')
     parser.add_argument('--msg')
     parser.add_argument('--regex')
@@ -56,8 +57,7 @@ def get_file(fname, flags):
     try:
         f = open(fname, flags)
     except (OSError, IOError) as error:
-        print("Error opening file: ", error)
-        sys.exit(1)
+        raise SystemExit(error)
     else:
         return f
 
@@ -67,7 +67,7 @@ def get_input(msg):
     try:
         input_string = input(msg + '\n-> ')
     except (EOFError, KeyboardInterrupt):
-        sys.exit(colored("\nQuitting!", 'red'))
+        raise SystemExit(colored("\nQuitting!", 'red'))
     else:
         return input_string
 
@@ -98,11 +98,12 @@ def prompt_action(service):
 
     # Prompt user for [y/n/s]
     colours = [('y', 'green'), ('n', 'red'), ('s', 'blue')]
-    choices = (colored(t, c) for (t, c) in colours)
+    choices = (colored(text, colour) for (text, colour) in colours)
     return sanitize(get_input('[{}/{}/{}]'.format(*choices)))
 
 
-def handle_choice(choice, fifo_queue, args):
+def handle_choice(choice, fifo_queue, service, args):
+    # [TODO] Fix indentation
 
     # If the user wishes to Schedule Downtime
     if choice.startswith('s'):
@@ -111,20 +112,32 @@ def handle_choice(choice, fifo_queue, args):
         start_time = get_input('Start Date: [Default: now]') or time_now
         end_time = get_input('End Date: [Default: now + 2h]') or time_now
 
-        write_data = ' '.join([start_time, end_time, '\n'])
-        fifo_queue.write(write_data)
+        dates = {'start_time': start_time, 'end_time': end_time}
+        data = ChainMap(service, vars(args), dates)
+
+        write_data = """
+        Schedule Service Downtime {host_name} {service_description}
+        {start_time} {end_time} {username} {msg}
+        """
+
+        fifo_queue.write(write_data.format(**data))
 
     # If the user wishes to Acknowledge problem
+
     elif choice.startswith('y'):
-        write_data = ' '.join(["thing", "acknowledged", "boiii\n"])
-        fifo_queue.write(write_data)
+        data = ChainMap(service, vars(args))
+        write_data = """
+        Acknowledge service problem {host_name} {service_description}
+        {username} {msg}
+        """
+        fifo_queue.write(write_data.format(**data))
 
 
 def main():
-    args = parse_missing_args(parse_args(sys.argv[1:]))
-
     status_file = get_file('status.dat', 'r')
     fifo_queue = get_file('outfile.txt', 'w')
+
+    args = parse_missing_args(parse_args(sys.argv[1:]))
 
     # Store attributes in a dictionary
     service = {}
@@ -156,7 +169,7 @@ def main():
                 if args.regex.match(desc) and is_unchecked(service):
 
                     choice = prompt_action(service)
-                    handle_choice(choice, fifo_queue, args)
+                    handle_choice(choice, fifo_queue, service, args)
 
             # Delete attributes set from previous service
             service.clear()
@@ -166,7 +179,7 @@ def main():
             match = re.match(attributes_regex, line)
             if match:
                 key = match.group()
-                service[key] = line.split("=", maxsplit=1)[-1]
+                service[key] = line.split('=', maxsplit=1)[-1]
 
     print(colored('Finished!', 'green'))
 
