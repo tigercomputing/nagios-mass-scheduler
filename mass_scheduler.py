@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import os
 import re
 import sys
+import time
 
 from argparse import ArgumentParser
 from collections import ChainMap
@@ -24,9 +24,9 @@ attributes_regex = re.compile("|".join(attributes))
 
 def parse_args(args):
     parser = ArgumentParser()
-    parser.add_argument('--username')
-    parser.add_argument('--msg')
-    parser.add_argument('--regex')
+    parser.add_argument('-u', '--username')
+    parser.add_argument('-m', '--msg')
+    parser.add_argument('-r', '--regex')
     return parser.parse_args(args)
 
 
@@ -71,19 +71,25 @@ def sanitize(text):
     return text.strip().lower()
 
 
-def is_unchecked(service):
-    """Returns True if all `key_states` in service dictionary are set to 0 """
-    return not any(int(service.get(key, 1)) for key in [
-        'current_state', 'problem_has_been_acknowledged',
-        'scheduled_downtime_depth'
-    ])
+def is_interesting(service):
+    """Should the service be available for acknowledging?"""
 
+    # If the service state is OK, we don't care
+    if int(service['current_state']) == 0:
+        return False
+
+    # Skip if already acknowledged
+    if int(service['problem_has_been_acknowledged']) != 0:
+        return False
+
+    # Skip if currently in scheduled downtime
+    if int(service['scheduled_downtime_depth']) != 0:
+        return False
+
+    return True
 
 def prompt_action(service):
     """Prompts the user for input for each pending service"""
-
-    # Clear the screen
-    os.system('clear')
 
     # Display service description and hostname
     service_info = "{service_description} @ {host_name}".format(**service)
@@ -111,34 +117,32 @@ def get_date(prompt):
 
 
 def handle_choice(choice, fifo_queue, service, args):
+    now = int(time.time())
 
     # If the user wishes to Schedule Downtime
     if choice.startswith('s'):
-        start_time = get_date('Start Time [mins from now]')
-        while True:
-            end_time = get_date('End Time [mins from now]')
-            if start_time > end_time:
-                print(colored('End Time must be > Start Time', 'red'))
-            else:
-                break
+        duration = get_date('Duration [mins from now]')
 
-        dates = {'start_time': start_time*60, 'end_time': end_time*60}
+        dates = {
+            'start_time': now,
+            'duration': duration * 60,
+            'end_time': now + duration * 60,
+        }
         data = ChainMap(service, vars(args), dates)
 
-        write_data = """
-        Schedule Service Downtime {host_name} {service_description}
-        {start_time} {end_time} {username} {msg}
-        """
+        write_data = "[{start_time}] SCHEDULE_SVC_DOWNTIME;{host_name};" \
+            "{service_description};{start_time};{end_time};1;0;{duration};" \
+            "{username};{msg}\n"
 
         fifo_queue.write(write_data.format(**data))
 
     # If the user wishes to Acknowledge problem
     elif choice.startswith('y'):
-        data = ChainMap(service, vars(args))
-        write_data = """
-        Acknowledge service problem {host_name} {service_description}
-        {username} {msg}
-        """
+
+        write_data = "[{time}] ACKNOWLEDGE_SVC_PROBLEM;{host_name};" \
+            "{service_description};1;0;0;{username};{msg}\n"
+
+        data = ChainMap(service, vars(args), {'time': now})
         fifo_queue.write(write_data.format(**data))
 
 
@@ -172,10 +176,10 @@ def main():
             # Acknowledge previously parsed service
             if is_service:
 
-                # Only proceed is current service matches search term
+                # Only proceed if current service matches search term
                 desc = service.get('service_description', False)
 
-                if args.regex.match(desc) and is_unchecked(service):
+                if is_interesting(service) and args.regex.match(desc):
 
                     choice = prompt_action(service)
                     handle_choice(choice, fifo_queue, service, args)
