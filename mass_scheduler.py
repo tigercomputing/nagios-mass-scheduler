@@ -88,6 +88,7 @@ def is_interesting(service):
 
     return True
 
+
 def prompt_action(service):
     """Prompts the user for input for each pending service"""
 
