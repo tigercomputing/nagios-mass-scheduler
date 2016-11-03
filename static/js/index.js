@@ -41,9 +41,6 @@ $('.form').submit(f => {
 /**
  * Register callback functions to fire off on events which effect the form
  */
-
-$(document).ready(() => togglebutton());
-
 $('#timeInput').bind('keyup change', () => togglebutton());
 
 $('#clearButton').on('click', function() {
@@ -70,3 +67,22 @@ $('table tr').click(function(event) {
         $(':checkbox', this).trigger('click');
     }
 });
+
+
+$(document).ready(function() {
+
+    togglebutton();
+
+    var options = {
+        valueNames: ['host_name', 'service_description', 'plugin_output']
+    };
+
+    new List('services-list', options);
+
+});
+
+$(document).on('keypress', 'form', function(event) {
+    // Don't submit the search form on enter
+    return event.keyCode !== 13;
+});
+
