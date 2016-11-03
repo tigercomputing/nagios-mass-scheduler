@@ -17,13 +17,12 @@
     </head>
     <body>
         <div class="container">
-            <form class="form" action="" method="post">
-                <div id="services-list">
-                    <br>
-                    <form class="d-inline-block">
-                        <input type="search" class="form-control search rounded" placeholder="Search" autocomplete=off autofocus>
-                    </form>
-                    <br>
+            <div id="services-list">
+                <br>
+                <form class="d-inline-block">
+                    <input type="search" class="form-control search rounded" placeholder="Search" autocomplete=off autofocus>
+                </form>
+                <form class="form" action="" method="post">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -52,57 +51,57 @@
                             {% endif %}
                         </tbody>
                     </table>
-                </div>
-                <br>
-                <div class="form-group row">
-                    <label for="userInput" class="col-xs-2 col-form-label">User</label>
-                    <div class="col-xs-10">
-                        <div class="input-group">
-                            <div class="input-group-addon"><i class="fa fa-fw fa-user" aria-hidden="true"></i></div>
-                            <input type="text" name="username" class="form-control" id="userInput" placeholder="User">
+                    <br>
+                    <div class="form-group row">
+                        <label for="userInput" class="col-xs-2 col-form-label">User</label>
+                        <div class="col-xs-10">
+                            <div class="input-group">
+                                <div class="input-group-addon"><i class="fa fa-fw fa-user" aria-hidden="true"></i></div>
+                                <input type="text" name="username" class="form-control" id="userInput" placeholder="User">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="messageInput" class="col-xs-2 col-form-label">Message</label>
-                    <div class="col-xs-10">
-                        <div class="input-group">
-                            <div class="input-group-addon"><i class="fa fa-fw fa-comment" aria-hidden="true"></i></div>
-                            <input type="text" name="message" id="messageInput" class="form-control" placeholder="Message">
+                    <div class="form-group row">
+                        <label for="messageInput" class="col-xs-2 col-form-label">Message</label>
+                        <div class="col-xs-10">
+                            <div class="input-group">
+                                <div class="input-group-addon"><i class="fa fa-fw fa-comment" aria-hidden="true"></i></div>
+                                <input type="text" name="message" id="messageInput" class="form-control" placeholder="Message">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="timeInput" class="col-xs-2 col-form-label">Time</label>
-                    <div class="col-xs-10">
-                        <div class="input-group">
-                            <div class="input-group-addon"><i class="fa fa-fw fa-clock-o" aria-hidden="true"></i></div>
-                            <input type="number" name="duration" min="1" class="form-control" id="timeInput" placeholder="Time">
-                            <div class="input-group-addon" id="clearButton"><i class="fa fa-times text-danger" aria-hidden="true"></i></div>
+                    <div class="form-group row">
+                        <label for="timeInput" class="col-xs-2 col-form-label">Time</label>
+                        <div class="col-xs-10">
+                            <div class="input-group">
+                                <div class="input-group-addon"><i class="fa fa-fw fa-clock-o" aria-hidden="true"></i></div>
+                                <input type="number" name="duration" min="1" class="form-control" id="timeInput" placeholder="Time">
+                                <div class="input-group-addon" id="clearButton"><i class="fa fa-times text-danger" aria-hidden="true"></i></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <div class="offset-xs-2 col-xs-10">
-                        <div class="hidden alert alert-danger" id="errorBox" role="alert">
-                            <i class="fa fa-fw fa-times text-danger" aria-hidden="true"></i>
-                            <b>Error: </b> <span id="errorContent"></span>
+                    <div class="form-group row">
+                        <div class="offset-xs-2 col-xs-10">
+                            <div class="hidden alert alert-danger" id="errorBox" role="alert">
+                                <i class="fa fa-fw fa-times text-danger" aria-hidden="true"></i>
+                                <b>Error: </b> <span id="errorContent"></span>
+                            </div>
+                            {% with messages = get_flashed_messages() %}
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div class="alert alert-success" role="alert">
+                                            <i class="fa fa-fw fa-check text-success" aria-hidden="true"></i>
+                                            <b>Success: </b>
+                                            {{ message }}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                            <button id="submitButton" type="submit" class="btn btn-success">Acknowledge</button>
                         </div>
-                        {% with messages = get_flashed_messages() %}
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-success" role="alert">
-                                        <i class="fa fa-fw fa-check text-success" aria-hidden="true"></i>
-                                        <b>Success: </b>
-                                        {{ message }}
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        {% endwith %}
-                        <button id="submitButton" type="submit" class="btn btn-success">Acknowledge</button>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </body>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>

@@ -2,11 +2,9 @@ from flask import (
     Flask, render_template, request, redirect, url_for, session, flash
 )
 
-from utils import get_services
-
 from collections import ChainMap
-from operator import itemgetter
 from time import time
+from utils import get_services
 
 app = Flask(__name__)
 
@@ -30,7 +28,7 @@ def index():
         form = request.form
 
         service_ids = [int(v) for k, v in form.items() if k[:7] == ('service')]
-        services = itemgetter(*service_ids)(session['services'])
+        services = [session['services'][i] for i in service_ids]
 
         now = int(time())
         fifo_queue = open('outfile.txt', 'a')
