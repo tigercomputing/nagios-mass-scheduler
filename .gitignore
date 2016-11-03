@@ -1,5 +1,6 @@
 *.dat
 *.txt
+__pycache__/*
 mass_scheduler.pl
 tags*
 venv/*
