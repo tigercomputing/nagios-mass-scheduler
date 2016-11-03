@@ -85,4 +85,3 @@ $(document).on('keypress', 'form', function(event) {
     // Don't submit the search form on enter
     return event.keyCode !== 13;
 });
-
