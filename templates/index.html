@@ -10,46 +10,13 @@
         <style type="text/css">
             .hidden { display: none !important; }
             .rounded { border-radius: 2em !important; }
-            .padded-bottom { padding-bottom: 1rem; }
         </style>
     </head>
     <body>
         <div class="container">
             <div id="services-list">
                 <br>
-                <form class="d-inline-block padded-bottom">
-                    <input type="search" class="form-control search rounded" placeholder="Search" autocomplete=off autofocus>
-                </form>
                 <form class="form" action="" method="post">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th><i class="fa fa-fw fa-server" aria-hidden="true"></i> Host Name</th>
-                                <th><i class="fa fa-fw fa-info" aria-hidden="true"></i> Service Description</th>
-                                <th><i class="fa fa-fw fa-plug" aria-hidden="true"></i> Plugin Output</th>
-                                <th id="toggleAll"><i class="fa fa-fw fa-check text-success" aria-hidden="true"></i></th>
-                            </tr>
-                        </thead>
-                        <tbody class="list">
-                            {% if services %}
-                                {% for service in services %}
-                                    <tr>
-                                        <td class="host_name">{{ service.host_name }}</td>
-                                        <td class="service_description">{{ service.service_description }}</td>
-                                        <td class="plugin_output">{{ service.plugin_output }}</td>
-                                        <td>
-                                            <div class="form-check">
-                                                <label class="form-check-label">
-                                                    <input class="form-check-input" type="checkbox" name="service{{ service.pk }}" value="{{ service.pk }}">
-                                                </label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            {% endif %}
-                        </tbody>
-                    </table>
-                    <br>
                     <div class="form-group row">
                         <label for="userInput" class="col-xs-2 col-form-label">User</label>
                         <div class="col-xs-10">
@@ -99,6 +66,38 @@
                             <button id="submitButton" type="submit" class="btn btn-success">Acknowledge</button>
                         </div>
                     </div>
+                    <form class="d-inline-block">
+                        <input type="search" style="margin-bottom: 1rem;" class="form-control search rounded" placeholder="Search" autocomplete=off autofocus>
+                    </form>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="fa fa-fw fa-server" aria-hidden="true"></i> Host Name</th>
+                                <th><i class="fa fa-fw fa-info" aria-hidden="true"></i> Service Description</th>
+                                <th><i class="fa fa-fw fa-plug" aria-hidden="true"></i> Plugin Output</th>
+                                <th id="toggleAll"><i class="fa fa-fw fa-check text-success" aria-hidden="true"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody class="list">
+                            {% if services %}
+                                {% for service in services %}
+                                    <tr>
+                                        <td class="host_name">{{ service.host_name }}</td>
+                                        <td class="service_description">{{ service.service_description }}</td>
+                                        <td class="plugin_output">{{ service.plugin_output }}</td>
+                                        <td>
+                                            <div class="form-check">
+                                                <label class="form-check-label">
+                                                    <input class="form-check-input" type="checkbox" name="service{{ service.pk }}" value="{{ service.pk }}">
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <br>
                 </form>
             </div>
         </div>
