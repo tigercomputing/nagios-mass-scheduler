@@ -18,6 +18,7 @@ function togglebutton() {
  * is missing
  */
 $('.form').submit(f => {
+
     // Find all the inputs on the page
     var inputs = [].slice.call(document.getElementsByTagName('input'));
     var checkboxes = inputs.filter(i => i.type === 'checkbox');
@@ -45,10 +46,8 @@ $('.form').submit(f => {
             $('#errorContent').text('Select a future time to avoid nagios confusion');
             $('#errorBox').removeClass('hidden');
             return;
-
         }
     }
-
 });
 
 
@@ -73,13 +72,34 @@ $('#toggleAll').click(function() {
 });
 
 
-/**
- * Clicking a table row will toggle checkbox for that row
- */
-$('table tr').click(function(event) {
-    if (event.target.type !== 'checkbox') {
-        $(':checkbox', this).trigger('click');
-    }
+$(function () {
+
+    // Store mouse state
+    var isMouseDown = false;
+
+    /**
+     * Clicking a table row will toggle checkbox for that row, dragging whilst
+     * holding down the mouse will highlight multiple rows
+     */
+    $('table tr')
+        .mousedown(function () {
+            isMouseDown = true;
+            $(':checkbox', this).trigger('click');
+            return false; // prevent text selection
+        })
+        .mouseover(function () {
+            if (isMouseDown) {
+                $(':checkbox', this).trigger('click');
+            }
+        });
+
+    /**
+     * Resets the mousedown status flag
+     */
+    $(document) .mouseup(function () {
+        isMouseDown = false;
+    });
+
 });
 
 
@@ -109,7 +129,6 @@ $('#timeInput').data({
     minDate: new Date(),
     dateFormat: 'dd/mm/yyyy',
 });
-
 
 
 /**
