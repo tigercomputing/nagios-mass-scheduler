@@ -5,6 +5,7 @@ from flask import (
 from collections import ChainMap
 from time import time
 from utils import get_services
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -38,11 +39,17 @@ def index():
 
         # If duration has been specified
         if duration:
+
+            time_format = '%d/%m/%Y %I:%M %p'
+            end_time = datetime.strptime(form['duration'], time_format)
+            end_time_timestamp = int(end_time.timestamp())
+
             dates = {
                 'start_time': now,
-                'duration': int(duration) * 60,
-                'end_time': now + int(duration) * 60,
+                'duration': end_time_timestamp - now,
+                'end_time': end_time_timestamp,
             }
+
             for service in services:
                 data = ChainMap(service, form, dates)
                 fifo_queue.write(downtime_string.format(**data))
