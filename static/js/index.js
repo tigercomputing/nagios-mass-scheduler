@@ -22,6 +22,7 @@ $('.form').submit(f => {
     var inputs = [].slice.call(document.getElementsByTagName('input'));
     var checkboxes = inputs.filter(i => i.type === 'checkbox');
     var filledIn = checkboxes.map(box => box.checked).some(bool => bool);
+
     if (!filledIn) {
         f.preventDefault();
         $('#errorContent').text('Select services to apply action to!');
@@ -29,12 +30,25 @@ $('.form').submit(f => {
         return;
     }
 
-
     if($('#messageInput').val() === '' || $('#userInput').val() === '') {
+        f.preventDefault();
         $('#errorContent').text('Please provide a username and message');
         $('#errorBox').removeClass('hidden');
-        f.preventDefault();
+        return;
     }
+
+    if($('#timeInput').val() !== '') {
+        var datepicker = $('#timeInput').datepicker().data('datepicker');
+        selectedDate = datepicker.selectedDates[0];
+        if(selectedDate <= new Date()) {
+            f.preventDefault();
+            $('#errorContent').text('Select a future time to avoid nagios confusion');
+            $('#errorBox').removeClass('hidden');
+            return;
+
+        }
+    }
+
 });
 
 
@@ -69,19 +83,42 @@ $('table tr').click(function(event) {
 });
 
 
+/**
+ * Code runs on initial page load
+ */
 $(document).ready(function() {
 
+    // Set the current button status
     togglebutton();
 
+    // Configure list.js attributes
     var options = {
         valueNames: ['host_name', 'service_description', 'plugin_output']
     };
-
     new List('services-list', options);
 
 });
 
-$(document).on('keypress', 'form', function(event) {
-    // Don't submit the search form on enter
-    return event.keyCode !== 13;
+
+/**
+ * Datepicker configuration
+ */
+$('#timeInput').data({
+    minutesStep: 5,
+    timepicker: true,
+    minDate: new Date(),
+    dateFormat: 'dd/mm/yyyy',
+});
+
+
+
+/**
+ * Sets the time input field to the current time
+ */
+$('#setTime').on('click', function() {
+    var datepicker = $('#timeInput').datepicker().data('datepicker');
+    var currentTime = new Date();
+    currentTime.setMinutes(currentTime.getMinutes() + 5);
+    datepicker.selectDate(currentTime);
+    togglebutton();
 });
