@@ -55,7 +55,10 @@
                             {% with messages = get_flashed_messages() %}
                                 {% if messages %}
                                     {% for message in messages %}
-                                        <div class="alert alert-success" role="alert">
+                                        <div class="alert alert-success alert-dismissible" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
                                             <i class="fa fa-fw fa-check text-success" aria-hidden="true"></i>
                                             <b>Success: </b>
                                             {{ message }}
