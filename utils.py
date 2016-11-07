@@ -1,5 +1,3 @@
-from functools import partial
-
 attributes = (
     'current_state',
     'problem_has_been_acknowledged',
@@ -11,7 +9,9 @@ attributes = (
 
 
 def parse_attrs(body):
+    # Splits line in half at the leftmost '=' symbol
     split_lines = [line.split('=', maxsplit=1) for line in body]
+    # Filters out status lines not in attributes tuple
     return filter(lambda l: l[0] in attributes, split_lines)
 
 
@@ -29,29 +29,38 @@ def is_interesting(service):
 
 
 def parse_service(position, lines):
+    # Parses text between bracket delimiters
+    print(position)
     header, *body = lines[slice(*position)]
     if header == 'servicestatus {':
         return {k: v for k, v in parse_attrs(body)}
 
 
 def get_positions(lines):
+    # Loops through entire file recording postions of {} delims
     start_positions, end_positions = [], []
     for lineno, line in enumerate(lines):
         if line.endswith('{'):
             start_positions.append(lineno)
         elif line.startswith('}'):
             end_positions.append(lineno)
-    return start_positions, end_positions
+    # Zips line numbers into tuple pairs [(start, end), ...)]
+    return list(zip(start_positions, end_positions))
 
 
 def get_services():
-    lines = [line.strip() for line in open('status.dat')]
-    sections = list(zip(*get_positions(lines)))[1:]
-    services = []
-    for service in map(partial(parse_service, lines=lines), sections):
-        if service:
-            services.append(service)
+    # Fetch lines (whitespace removed) from nagios file
+    lines = [line.strip() for line in open('test.dat')]
 
+    # Parse each section
+    services = [parse_service(s, lines) for s in get_positions(lines)]
+
+    # Remove None values
+    services = filter(None, services)
+
+    # Filter by interesting services
     filtered = list(filter(is_interesting, services))
+
+    # Assign each a primary key value
     [s.update({'pk': i}) for i, s in enumerate(filtered)]
     return filtered
