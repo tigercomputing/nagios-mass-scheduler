@@ -152,12 +152,14 @@ $('#timeInput').data({
 
 
 /**
- * Sets the time input field to the current time
+ * Sets the time input field to 17:00 today
  */
 $('#setTime').on('click', function() {
     var datepicker = $('#timeInput').datepicker().data('datepicker');
-    var currentTime = new Date();
-    currentTime.setMinutes(currentTime.getMinutes() + 5);
-    datepicker.selectDate(currentTime);
+    var today = new Date();
+    today.setHours(17);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    datepicker.selectDate(today);
     togglebutton();
 });
