@@ -4,3 +4,4 @@ __pycache__/*
 mass_scheduler.pl
 tags*
 venv/*
+node_modules/*
