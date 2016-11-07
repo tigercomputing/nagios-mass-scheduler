@@ -30,7 +30,6 @@ def is_interesting(service):
 
 def parse_service(position, lines):
     # Parses text between bracket delimiters
-    print(position)
     header, *body = lines[slice(*position)]
     if header == 'servicestatus {':
         return {k: v for k, v in parse_attrs(body)}
