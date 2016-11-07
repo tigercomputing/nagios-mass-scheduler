@@ -127,7 +127,8 @@ $('#timeInput').data({
     minutesStep: 5,
     timepicker: true,
     minDate: new Date(),
-    dateFormat: 'dd/mm/yyyy',
+    dateFormat: 'dd-mm-yyyy',
+    timeFormat: 'hh:ii',
 });
 
 

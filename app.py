@@ -42,7 +42,7 @@ def index():
         # If duration has been specified
         if duration:
 
-            time_format = '%d/%m/%Y %I:%M %p'
+            time_format = '%d-%m-%Y %H:%M'
             end_time = datetime.strptime(form['duration'], time_format)
             end_time_timestamp = int(end_time.timestamp())
 
