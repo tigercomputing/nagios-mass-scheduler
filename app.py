@@ -7,6 +7,8 @@ from time import time
 from utils import get_services
 from datetime import datetime
 
+import socket
+
 app = Flask(__name__)
 
 # set the secret key.  keep this really secret:
@@ -69,4 +71,7 @@ def index():
     return render_template('index.html', services=services)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Poor mans check to prevent Debug in production
+    if socket.gethostname() == 'rutland':
+        app.run(debug=True)
+    app.run()
