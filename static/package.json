@@ -1,0 +1,18 @@
+{
+  "name": "mass_scheduler",
+  "version": "1.0.0",
+  "description": "utility to bulk acknowledge / schedule downtime for services",
+  "main": "none",
+  "dependencies": {
+    "air-datepicker": "^2.2.3",
+    "bootstrap": "^4.0.0-alpha.5",
+    "font-awesome": "^4.7.0",
+    "list.js": "^1.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
