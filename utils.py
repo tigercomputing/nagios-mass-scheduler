@@ -48,8 +48,12 @@ def get_positions(lines):
 
 
 def get_services():
-    # Fetch lines (whitespace removed) from nagios file
-    lines = [line.strip() for line in open('test.dat')]
+
+    # Open file in context-manager, as there's no garauntee file will be
+    # garbage collected in all python implementations inside a list-comp
+    with open('test.dat') as f:
+        # Fetch lines (whitespace removed) from nagios file
+        lines = [line.strip() for line in f]
 
     # Parse each section
     services = [parse_service(s, lines) for s in get_positions(lines)]
