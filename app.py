@@ -31,6 +31,10 @@ import socket
 
 application = Flask(__name__)
 
+# Poor mans check to prevent Debug in production
+if socket.gethostname() == 'rutland':
+    application.debug = True
+
 # set the secret key.  keep this really secret:
 application.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
 
@@ -91,7 +95,4 @@ def index():
     return render_template('index.html', services=services)
 
 if __name__ == '__main__':
-    # Poor mans check to prevent Debug in production
-    if socket.gethostname() == 'rutland':
-        application.run(debug=True)
     application.run()
