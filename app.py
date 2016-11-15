@@ -29,10 +29,14 @@ from datetime import datetime
 
 import socket
 
-app = Flask(__name__)
+application = Flask(__name__)
+
+# Poor mans check to prevent Debug in production
+if socket.gethostname() == 'rutland':
+    application.debug = True
 
 # set the secret key.  keep this really secret:
-app.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
+application.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
 
 
 downtime_string = "[{start_time}] SCHEDULE_SVC_DOWNTIME;{host_name};"\
@@ -44,7 +48,7 @@ acknowledge_string = "[{time}] ACKNOWLEDGE_SVC_PROBLEM;{host_name};" \
     "{service_description};1;0;0;{username};{message}\n"
 
 
-@app.route('/', methods=['POST', 'GET'])
+@application.route('/', methods=['POST', 'GET'])
 def index():
 
     if request.method == 'POST':
@@ -91,7 +95,4 @@ def index():
     return render_template('index.html', services=services)
 
 if __name__ == '__main__':
-    # Poor mans check to prevent Debug in production
-    if socket.gethostname() == 'rutland':
-        app.run(debug=True)
-    app.run()
+    application.run()
