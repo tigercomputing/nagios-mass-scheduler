@@ -58,7 +58,7 @@ def index():
         services = [session['services'][i] for i in service_ids]
 
         now = int(time())
-        fifo_queue = open('outfile.txt', 'a')
+        fifo_queue = open('outfile.txt', 'w')
 
         # Parse duration from the form
         duration = form.get('duration', None)
