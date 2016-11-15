@@ -146,6 +146,7 @@ $('#timeInput').data({
     minutesStep: 5,
     timepicker: true,
     minDate: new Date(),
+    onSelect: () => togglebutton(),
     dateFormat: 'dd-mm-yyyy',
     timeFormat: 'hh:ii',
 });
