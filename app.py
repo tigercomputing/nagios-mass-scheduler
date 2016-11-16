@@ -31,10 +31,11 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
-sess = Session()
 
-app.config['SESSION_TYPE'] = 'filesystem'
-sess.init_app(app)
+# Flask Session Settings
+SESSION_TYPE = 'filesystem'
+app.config.from_object(__name__)
+Session(app)
 
 downtime_string = "[{start_time}] SCHEDULE_SVC_DOWNTIME;{host_name};"\
     "{service_description};{start_time};{end_time};1;0;"\
