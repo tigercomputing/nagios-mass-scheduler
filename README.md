@@ -21,7 +21,7 @@ with the following example configuration:
 
 ```
 WSGIDaemonProcess mass-scheduler python-path=/srv/mass-scheduler user=www-data group=www-data threads=5
-WSGIScriptAlias /mass-scheduler /srv/mass-scheduler/.wsgi
+WSGIScriptAlias /mass-scheduler /srv/mass-scheduler/wsgi.py
 WSGIScriptReloading On
 <Directory /srv/mass-scheduler>
     WSGIProcessGroup mass-scheduler
