@@ -89,6 +89,7 @@ $('#toggleAll').click(function() {
         $(this).toggleClass('table-success');
         isHighlighted = $(this).hasClass('table-success');
         $(':checkbox', this).prop('checked', isHighlighted);
+        $(this).find('.fa').toggle(isHighlighted);
     });
 });
 
