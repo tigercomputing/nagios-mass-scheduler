@@ -87,11 +87,8 @@
                                         <td class="service_description">{{ service.service_description }}</td>
                                         <td class="plugin_output">{{ service.plugin_output }}</td>
                                         <td>
-                                            <div class="form-check">
-                                                <label class="form-check-label">
-                                                    <input class="form-check-input" type="checkbox" name="service{{ service.pk }}" value="{{ service.pk }}">
-                                                </label>
-                                            </div>
+                                            <input type="checkbox" style="display:none" name="service{{ service.pk }}" value="{{ service.pk }}">
+                                            <i style="display:none;" class="fa fa-fw fa-check text-success" aria-hidden="true"></i>
                                         </td>
                                     </tr>
                                 {% endfor %}

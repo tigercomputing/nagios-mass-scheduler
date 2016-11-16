@@ -85,40 +85,53 @@ $('#clearButton').on('click', function() {
  * Clicking the toggleAll button will toggle all checkboxes
  */
 $('#toggleAll').click(function() {
-    $('table input:checkbox').each(function() {
-        $(this).prop('checked', !$(this).prop('checked'));
+    $('tbody tr').each(function() {
+        $(this).toggleClass('table-success');
+        isHighlighted = $(this).hasClass('table-success');
+        $(':checkbox', this).prop('checked', isHighlighted);
     });
 });
 
 
+/**
+ * Checks checkboxes when clicking anywhere in table row
+ */
 $(function () {
-
-    // Store mouse state
-    var isMouseDown = false;
-
-    /**
-     * Clicking a table row will toggle checkbox for that row, dragging whilst
-     * holding down the mouse will highlight multiple rows
-     */
-    $('table tr')
+    var isMouseDown = false,
+        isHighlighted;
+    $('tbody tr')
         .mousedown(function () {
             isMouseDown = true;
-            $(':checkbox', this).trigger('click');
+            $(this).toggleClass('table-success');
+            isHighlighted = $(this).hasClass('table-success');
+            $(this).find('.fa').toggle(isHighlighted);
+            $(':checkbox', this).prop('checked', isHighlighted);
             return false; // prevent text selection
         })
         .mouseover(function () {
             if (isMouseDown) {
-                $(':checkbox', this).trigger('click');
+                $(this).find('.fa').toggle(isHighlighted);
+                $(this).toggleClass('table-success', isHighlighted);
+                $(':checkbox', this).prop('checked', isHighlighted);
             }
+        })
+        .bind('selectstart', function () {
+            return false;
         });
-
-    /**
-     * Resets the mousedown status flag
-     */
-    $(document) .mouseup(function () {
+    $(document).mouseup(function () {
         isMouseDown = false;
     });
+});
 
+
+/**
+ * Prevent accidental form submission on Enter press when searching
+ */
+$('input[type=search]').keydown(function(event){
+    if(event.keyCode === 13) {
+        event.preventDefault();
+        return false;
+    }
 });
 
 
@@ -126,14 +139,6 @@ $(function () {
  * Code runs on initial page load
  */
 $(document).ready(function() {
-
-    // Prevent accidental form submission on Enter press when searching
-    $('input[type=search]').keydown(function(event){
-        if(event.keyCode === 13) {
-            event.preventDefault();
-            return false;
-        }
-    });
 
     // Set the current button status
     togglebutton();
