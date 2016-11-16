@@ -1,7 +1,8 @@
 *.dat
 *.txt
 __pycache__/*
+flask_session/
 mass_scheduler.pl
+static/node_modules/*
 tags*
 venv/*
-static/node_modules/*

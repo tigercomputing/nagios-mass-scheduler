@@ -19,25 +19,22 @@ Copyright {c} 2016 Tiger Computing Ltd
 """
 
 from flask import (
-    Flask, render_template, request, redirect, url_for, session, flash
+    Flask, flash, redirect, render_template, request, session, url_for,
 )
+from flask_session import Session
 
 from collections import ChainMap
 from time import time
 from utils import get_services
 from datetime import datetime
 
-import socket
 
-application = Flask(__name__)
+app = Flask(__name__)
+app.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
+sess = Session()
 
-# Poor mans check to prevent Debug in production
-if socket.gethostname() == 'rutland':
-    application.debug = True
-
-# set the secret key.  keep this really secret:
-application.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
-
+app.config['SESSION_TYPE'] = 'filesystem'
+sess.init_app(app)
 
 downtime_string = "[{start_time}] SCHEDULE_SVC_DOWNTIME;{host_name};"\
     "{service_description};{start_time};{end_time};1;0;"\
@@ -48,7 +45,7 @@ acknowledge_string = "[{time}] ACKNOWLEDGE_SVC_PROBLEM;{host_name};" \
     "{service_description};1;0;0;{username};{message}\n"
 
 
-@application.route('/', methods=['POST', 'GET'])
+@app.route('/', methods=['POST', 'GET'])
 def index():
 
     if request.method == 'POST':
@@ -95,4 +92,4 @@ def index():
     return render_template('index.html', services=services)
 
 if __name__ == '__main__':
-    application.run()
+    app.run()
