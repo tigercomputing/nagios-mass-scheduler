@@ -39,9 +39,9 @@ function togglebutton() {
 $('.form').submit(f => {
 
     // Find all the inputs on the page
-    var inputs = [].slice.call(document.getElementsByTagName('input'));
-    var checkboxes = inputs.filter(i => i.type === 'checkbox');
-    var filledIn = checkboxes.map(box => box.checked).some(bool => bool);
+    const inputs = [].slice.call(document.getElementsByTagName('input'));
+    const checkboxes = inputs.filter(i => i.type === 'checkbox');
+    const filledIn = checkboxes.map(box => box.checked).some(bool => bool);
 
     if (!filledIn) {
         f.preventDefault();
@@ -126,6 +126,14 @@ $(function () {
  * Code runs on initial page load
  */
 $(document).ready(function() {
+
+    // Prevent accidental form submission on Enter press when searching
+    $('input[type=search]').keydown(function(event){
+        if(event.keyCode === 13) {
+            event.preventDefault();
+            return false;
+        }
+    });
 
     // Set the current button status
     togglebutton();
