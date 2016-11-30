@@ -26,6 +26,7 @@ from flask_session import Session
 from collections import ChainMap
 from configparser import ConfigParser
 from datetime import datetime
+from os import path
 from time import time
 from utils import get_services
 
@@ -33,7 +34,7 @@ app = Flask(__name__)
 app.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
 
 config = ConfigParser()
-config.read('settings.ini')
+config.read(path.expanduser('settings.ini'))
 
 
 # Flask Session Settings
