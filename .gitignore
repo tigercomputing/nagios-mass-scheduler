@@ -1,5 +1,6 @@
 *.dat
 __pycache__/*
+cache/
 flask_session/
 outfile.txt
 static/node_modules/*

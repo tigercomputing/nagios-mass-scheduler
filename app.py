@@ -29,14 +29,21 @@ from datetime import datetime
 from time import time
 from utils import get_services
 
-
 app = Flask(__name__)
 app.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
 
+config = ConfigParser()
+config.read('settings.ini')
+
+
 # Flask Session Settings
 SESSION_TYPE = 'filesystem'
+SESSION_FILE_DIR = config['DEFAULT']['SESSION_FILE_DIR']
 app.config.from_object(__name__)
 Session(app)
+
+NAGIOS_DAT_FILE = config['DEFAULT']['NAGIOS_DAT_FILE']
+FIFO_QUEUE = config['DEFAULT']['FIFO_QUEUE']
 
 downtime_string = "[{start_time}] SCHEDULE_SVC_DOWNTIME;{host_name};"\
     "{service_description};{start_time};{end_time};1;0;"\
@@ -96,8 +103,4 @@ def index():
 
 
 if __name__ == '__main__':
-    config = ConfigParser()
-    config.read('settings.ini')
-    NAGIOS_DAT_FILE = config['DEFAULT']['NAGIOS_DAT_FILE']
-    FIFO_QUEUE = config['DEFAULT']['FIFO_QUEUE']
     app.run()
