@@ -35,16 +35,17 @@ app.secret_key = '\xf9\x00\x9c\x15Q\x8a0\xc5\xbc\xa0@\x8f\xe8ky=\x92\xec\x01'
 
 config = ConfigParser()
 config.read(path.expanduser('settings.ini'))
+settings = config['SETTINGS']
 
 
 # Flask Session Settings
 SESSION_TYPE = 'filesystem'
-SESSION_FILE_DIR = config['DEFAULT']['SESSION_FILE_DIR']
+SESSION_FILE_DIR = settings.get('SESSION_FILE_DIR', 'cache')
 app.config.from_object(__name__)
 Session(app)
 
-NAGIOS_DAT_FILE = config['DEFAULT']['NAGIOS_DAT_FILE']
-FIFO_QUEUE = config['DEFAULT']['FIFO_QUEUE']
+NAGIOS_DAT_FILE = settings.get('NAGIOS_DAT_FILE', '/etc/nagios3/nagios.cfg')
+FIFO_QUEUE = settings.get('FIFO_QUEUE', 'out.txt')
 
 downtime_string = "[{start_time}] SCHEDULE_SVC_DOWNTIME;{host_name};"\
     "{service_description};{start_time};{end_time};1;0;"\
