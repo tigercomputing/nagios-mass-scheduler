@@ -1,6 +1,7 @@
 *.dat
 __pycache__/*
 flask_session/
+outfile.txt
 static/node_modules/*
 tags*
 venv/*
