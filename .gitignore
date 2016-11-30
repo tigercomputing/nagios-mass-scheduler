@@ -1,5 +1,4 @@
 *.dat
-*.txt
 __pycache__/*
 flask_session/
 static/node_modules/*
