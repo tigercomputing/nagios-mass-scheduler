@@ -24,9 +24,10 @@ from flask import (
 from flask_session import Session
 
 from collections import ChainMap
+from configparser import ConfigParser
+from datetime import datetime
 from time import time
 from utils import get_services
-from datetime import datetime
 
 
 app = Flask(__name__)
@@ -56,7 +57,7 @@ def index():
         services = [session['services'][i] for i in service_ids]
 
         now = int(time())
-        fifo_queue = open('outfile.txt', 'w')
+        fifo_queue = open(FIFO_QUEUE, 'w')
 
         # Parse duration from the form
         duration = form.get('duration', None)
@@ -83,14 +84,20 @@ def index():
                 data = ChainMap(service, {'time': now}, form)
                 fifo_queue.write(acknowledge_string.format(**data))
 
+        fifo_queue.close()
         flash('Request processed!')
         return redirect(url_for('index'))
 
     # Fetch the nagios services and store in session
-    services = get_services()
+    services = get_services(NAGIOS_DAT_FILE)
     session['services'] = services
 
     return render_template('index.html', services=services)
 
+
 if __name__ == '__main__':
+    config = ConfigParser()
+    config.read('settings.ini')
+    NAGIOS_DAT_FILE = config['DEFAULT']['NAGIOS_DAT_FILE']
+    FIFO_QUEUE = config['DEFAULT']['FIFO_QUEUE']
     app.run()

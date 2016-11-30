@@ -65,11 +65,11 @@ def get_positions(lines):
     return list(zip(start_positions, end_positions))
 
 
-def get_services():
+def get_services(nagios_file_path):
 
     # Open file in context-manager, as there's no garauntee file will be
     # garbage collected in all python implementations inside a list-comp
-    with open('test.dat') as f:
+    with open(nagios_file_path) as f:
         # Fetch lines (whitespace removed) from nagios file
         lines = [line.strip() for line in f]
 
