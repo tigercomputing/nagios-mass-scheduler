@@ -34,3 +34,8 @@ WSGIScriptReloading On
 
 Whichever user runs `nagios-mass-scheduler` will need to be able to read
 the status file and write to the command file.
+
+
+## Screenshot
+
+![screenshot](screenshot.png "Screenshot")
