@@ -12,7 +12,7 @@ not a number of seconds).
 1. Copy the source to somewhere convenient, for example `/srv/mass-scheduler`
 1. Install the Python dependencies listed in `requirements.txt`
 1. Use `npm` to install JavaScript dependencies: `cd static && npm install`
-1. Adjust the file locations for `outfile.txt` in `app.py` and `test.dat` in `utils.py`
+1. Configure the Nagios `.dat` plugin file and output FIFO queue file locations in `settings.ini`
 
 ### Connecting the web server
 
