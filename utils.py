@@ -23,6 +23,7 @@ attributes = (
     'host_name',
     'plugin_output',
     'service_description',
+    'last_check'
 )
 
 

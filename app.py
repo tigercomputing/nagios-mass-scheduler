@@ -56,6 +56,11 @@ acknowledge_string = "[{time}] ACKNOWLEDGE_SVC_PROBLEM;{host_name};" \
     "{service_description};1;0;0;{username};{message}\n"
 
 
+@app.template_filter('timestamp')
+def timestamp(timestamp):
+    return str(datetime.fromtimestamp(int(timestamp)))
+
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
 
